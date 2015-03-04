@@ -154,6 +154,7 @@ SAML 2.x support for the Spring Security Plugin
 		// TODO: Update to handle any type of meta data providers for default to file based instead http provider.
 		log.debug "Dynamically defining bean metadata providers... "
 		def providerBeanName = "extendedMetadataDelegate"
+        def idpConfig = conf.saml.metadata.idp.defaults
 		conf.saml.metadata.providers.each {k,v ->
 				
 				println "Registering metadata key: ${k} and value: $v"
@@ -165,6 +166,12 @@ SAML 2.x support for the Spring Security Plugin
 						}
 
 						extMetaDataDelegateBean.constructorArgs = [ref('filesystemMetadataProvider'), new ExtendedMetadata()]
+            
+                        boolean metadataTrustCheck = true
+                        if (idpConfig.get(k) && idpConfig.get(k).containsKey('metadataTrustCheck')) {
+                          metadataTrustCheck = idpConfig.get(k).get('metadataTrustCheck')
+                        }
+                        extMetaDataDelegateBean.setPropertyValue('metadataTrustCheck', metadataTrustCheck)
 				}
 
 				providers << ref(providerBeanName)
